@@ -1,19 +1,19 @@
-import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_STORAGE_BUCKET",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID",
+  apiKey: "AIzaSyCP-VBzudwBpRxhCn-aLyQRkSrCu2X3GfM",
+  authDomain: "tareas-aw.firebaseapp.com",
+  projectId: "tareas-aw",
+  storageBucket: "tareas-aw.firebasestorage.app",
+  messagingSenderId: "821220379344",
+  appId: "1:821220379344:web:4682f30dcea5aefa43acd5"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+// Exportar servicios
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app);
