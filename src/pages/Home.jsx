@@ -2,12 +2,27 @@ import Navbar from "../components/Navbar_1";
 import Hero from "../components/Hero";
 import ServiceCard from "../components/Card";
 import Footer from "../components/Footer";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   return (
     <>
       <Navbar />
       <Hero />
+
+      <div className="flex flex-col items-center gap-4 my-12">
+        <Link to="/feed" className="px-6 py-3 bg-blue-500 text-white rounded-lg">
+          Ver Feed
+        </Link>
+
+        <Link to="/mis-tareas" className="px-6 py-3 bg-green-500 text-white rounded-lg">
+          Ver Mis Tareas
+        </Link>
+
+        <Link to="/crear" className="px-6 py-3 bg-purple-500 text-white rounded-lg">
+          Crear Tarea
+        </Link>
+      </div>
 
       <section className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-8">
 
