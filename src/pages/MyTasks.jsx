@@ -1,6 +1,7 @@
 import { useState } from "react";
 import TaskCard from "../components/TaskCard";
 import TaskFilters from "../components/TaskFilters";
+import Sidebar from "../components/Sidebar";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 export default function MyTasks() {
@@ -50,7 +51,7 @@ export default function MyTasks() {
     <div className="flex bg-gray-50 min-h-screen">
 
       {/* Sidebar */}
-      <Sidebar />
+      {/* <Sidebar /> */}
 
       {/* Contenido principal */}
       <div className="flex-1 p-10">

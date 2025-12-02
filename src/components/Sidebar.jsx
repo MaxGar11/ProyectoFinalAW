@@ -11,6 +11,7 @@ export default function Sidebar() {
           Mis tareas
         </Link>
         <Link to="/crear" className="hover:text-blue-600">Crear tarea</Link>
+        <Link to="/perfil" className="hover:text-blue-600">Mi perfil</Link>
       </nav>
     </aside>
   );
