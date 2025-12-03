@@ -1,46 +1,61 @@
-export default function TaskCard({ task }) {
+import { FaCheckCircle, FaTrash, FaEdit } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
+export default function TaskCard({ task, onDelete, onToggleComplete, onEdit }) {
+  const navigate = useNavigate();
+
   return (
-    <div className="bg-white rounded-xl shadow p-4 border border-gray-100 hover:shadow-lg transition">
-      
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <span className="font-semibold text-gray-800 text-lg">
-          {task.title}
-        </span>
+    <div className="bg-white shadow-md rounded-lg p-5 border border-gray-200">
+      {/* Título + Estado */}
+      <div className="flex justify-between items-start">
+        <h3 className="text-xl font-semibold text-gray-800">{task.title}</h3>
 
         <span
-          className={`px-3 py-1 text-xs rounded-full font-semibold ${
+          className={`px-3 py-1 text-sm rounded-full ${
             task.status === "completed"
               ? "bg-green-100 text-green-700"
-              : task.status === "in-progress"
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-gray-200 text-gray-600"
+              : "bg-yellow-100 text-yellow-700"
           }`}
         >
-          {task.status === "completed"
-            ? "Completada"
-            : task.status === "in-progress"
-            ? "En proceso"
-            : "Pendiente"}
+          {task.status === "completed" ? "Completada" : "Pendiente"}
         </span>
       </div>
 
+      {/* Descripción */}
+      <p className="text-gray-600 mt-2">{task.description}</p>
+
       {/* Fecha */}
-      <p className="text-sm text-gray-500 mt-1">
-        Fecha límite: {task.date}
+      <p className="text-gray-400 text-sm mt-1">
+        {task.date ? `Creada el ${task.date}` : ""}
       </p>
 
-      {/* Descripción */}
-      <p className="text-gray-700 mt-3 line-clamp-3">{task.description}</p>
-
-      {/* Acciones */}
-      <div className="flex justify-between mt-4">
-        <button className="text-blue-600 font-semibold hover:underline">
-          Editar
+      {/* Botones */}
+      <div className="flex gap-3 mt-4">
+        {/* Completar */}
+        <button
+          onClick={onToggleComplete}
+          className="flex items-center gap-2 text-green-600 hover:text-green-700 transition"
+        >
+          <FaCheckCircle />
+          <span>{task.completed ? "Desmarcar" : "Completar"}</span>
         </button>
 
-        <button className="text-red-600 font-semibold hover:underline">
-          Eliminar
+        {/* Editar → abre la vista EditTask */}
+        <button
+          onClick={() => navigate(`/edit/${task.id}`)}
+          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition"
+        >
+          <FaEdit />
+          <span>Editar</span>
+        </button>
+
+        {/* Eliminar */}
+        <button
+          onClick={onDelete}
+          className="flex items-center gap-2 text-red-600 hover:text-red-700 transition"
+        >
+          <FaTrash />
+          <span>Eliminar</span>
         </button>
       </div>
     </div>

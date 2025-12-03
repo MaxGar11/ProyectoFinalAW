@@ -1,40 +1,61 @@
-export default function FeedPost({ post }) {
+import { useState } from "react";
+import { Heart } from "lucide-react";
+import { auth } from "../firebase/config";
+import imagenAleatoria from "../assets/random.jpg";
+
+export default function FeedPost({ post, onLike }) {
+  const userId = auth.currentUser.uid;
+
+  const hasLiked = post.likes?.includes(userId);
+  const [isLiked, setIsLiked] = useState(hasLiked);
+  const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
+
+  const toggle = () => {
+    setIsLiked(!isLiked);
+    setLikeCount((prev) => prev + (isLiked ? -1 : 1));
+    onLike(post.id, isLiked);
+  };
+
+  const formattedDate = post.createdAt?.toDate
+    ? post.createdAt.toDate().toLocaleString()
+    : "";
+
   return (
-    <div className="bg-white rounded-xl p-6 shadow hover:shadow-md transition">
+    <div className="bg-white p-6 rounded-xl shadow border">
+      
       {/* Header */}
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex items-center gap-3 mb-3">
         <img
-          src={post.avatar}
+          src={post.createdByPhoto || "../assets/random.jpg" + post.createdBy}
           alt="avatar"
-          className="w-12 h-12 rounded-full object-cover"
+          className="w-12 h-12 rounded-full object-cover shadow"
         />
+
         <div>
-          <h3 className="font-semibold text-gray-800 text-lg">{post.author}</h3>
-          <p className="text-gray-500 text-sm">{post.time}</p>
+          <p className="font-semibold text-gray-900">
+            {post.createdByName || "Usuario"}
+          </p>
+          <p className="text-sm text-gray-500">
+            {formattedDate}
+          </p>
         </div>
       </div>
 
-      {/* Título */}
-      <h2 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h2>
-
-      {/* Etiquetas */}
-      <div className="flex gap-2 mb-4">
-        {post.tags.map((tag, i) => (
-          <span
-            key={i}
-            className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-
       {/* Contenido */}
-      <p className="text-gray-700 leading-relaxed">{post.content}</p>
+      <h2 className="text-xl font-bold mb-2">{post.title}</h2>
+      <p className="text-gray-700 mb-4">{post.description}</p>
 
-      {/* Acciones */}
-      <button className="mt-4 text-blue-600 font-semibold hover:underline">
-        Añadir respuesta
+      {/* Likes */}
+      <button
+        onClick={toggle}
+        className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition"
+      >
+        <Heart
+          size={22}
+          fill={isLiked ? "red" : "none"}
+          stroke={isLiked ? "red" : "gray"}
+        />
+        {likeCount} likes
       </button>
     </div>
   );

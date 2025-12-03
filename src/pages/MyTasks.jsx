@@ -1,78 +1,72 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import TaskCard from "../components/TaskCard";
 import TaskFilters from "../components/TaskFilters";
-import Sidebar from "../components/Sidebar";
 import DashboardLayout from "../layouts/DashboardLayout";
+import { useTasks } from "../hooks/useTasks";
 
 export default function MyTasks() {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
-  // Simulación de tareas (esto lo reemplazará Firebase)
-  const tasks = [
-    {
-      id: 1,
-      title: "Ensayo de historia",
-      description: "Escribir mínimo 2 cuartillas sobre la cultura Maya.",
-      date: "2025-03-10",
-      status: "in-progress",
-    },
-    {
-      id: 2,
-      title: "Proyecto de IA",
-      description:
-        "Terminar diagrama UML de la red neuronal + pruebas iniciales.",
-      date: "2025-03-05",
-      status: "completed",
-    },
-    {
-      id: 3,
-      title: "Tarea de matemáticas",
-      description: "Resolver ejercicios del 1 al 10 del libro.",
-      date: "2025-03-07",
-      status: "pending",
-    },
-  ];
-   
-  // Logica de filtros y búsqueda
-  const filteredTasks = tasks.filter((task) => {
-    const matchesFilter =
-      filter === "all" ? true : task.status === filter;
+  const navigate = useNavigate();
 
+  const {
+    tasks,
+    deleteTask,
+    toggleComplete,
+  } = useTasks();
+
+  const mappedTasks = useMemo(() => {
+    return tasks.map((task) => ({
+      ...task,
+      status: task.completed ? "completed" : "pending",
+      date: task.createdAt?.toDate?.().toLocaleDateString() || "",
+    }));
+  }, [tasks]);
+
+  const filteredTasks = mappedTasks.filter((task) => {
+    const matchesFilter = filter === "all" ? true : task.status === filter;
     const matchesSearch = task.title
       .toLowerCase()
       .includes(search.toLowerCase());
-
     return matchesFilter && matchesSearch;
   });
 
   return (
     <DashboardLayout>
-    <div className="flex bg-gray-50 min-h-screen">
+      <div className="flex bg-gray-50 min-h-screen">
+        <div className="flex-1 p-10">
+          <h1 className="text-3xl font-bold mb-6">Mis tareas</h1>
 
-      {/* Sidebar */}
-      {/* <Sidebar /> */}
+          {/* Filtros */}
+          <TaskFilters
+            filter={filter}
+            setFilter={setFilter}
+            search={search}
+            setSearch={setSearch}
+          />
 
-      {/* Contenido principal */}
-      <div className="flex-1 p-10">
-        <h1 className="text-3xl font-bold mb-6">Mis tareas</h1>
+          {/* Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
 
-        {/* Filtros + Buscador */}
-        <TaskFilters
-          filter={filter}
-          setFilter={setFilter}
-          search={search}
-          setSearch={setSearch}
-        />
+                // Acciones conectadas
+                onDelete={() => deleteTask(task.id)}
+                onToggleComplete={() => toggleComplete(task.id, !task.completed)}
+                onEdit={() => navigate(`/edit/${task.id}`)}  // ← AQUI LA MAGIA
+              />
+            ))}
+          </div>
 
-        {/* Grid de tarjetas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredTasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
-          ))}
+          {filteredTasks.length === 0 && (
+            <p className="text-gray-500 mt-6">No hay tareas para mostrar.</p>
+          )}
         </div>
       </div>
-    </div>
     </DashboardLayout>
   );
 }
