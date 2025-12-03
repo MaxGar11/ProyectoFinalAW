@@ -5,7 +5,6 @@ import Login from "./pages/Login";
 import Feed from "./pages/Feed";
 import MyTasks from "./pages/MyTasks";
 import CreateTask from "./pages/CreateTask";
-import EditTask from "./pages/EditTask";
 import Profile from "./pages/Profile";
 
 function App() {
@@ -14,37 +13,41 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        
+
         {/* Rutas privadas */}
-        <Route path="/feed" 
-          element={
-          <PrivateRoute>
-            <Feed />
-          </PrivateRoute>} 
-          />
-        <Route path="/mis-tareas" 
-          element={
-          <PrivateRoute><MyTasks /></PrivateRoute>
-          } 
-        />
-        <Route path="/crear" 
-          element={
-          <PrivateRoute>
-            <CreateTask />
-          </PrivateRoute>
-          } />
-        <Route path="/editar/:id" 
+        <Route
+          path="/feed"
           element={
             <PrivateRoute>
-              <EditTask />
+              <Feed />
             </PrivateRoute>
-          } />
-        <Route path="/perfil" 
+          }
+        />
+        <Route
+          path="/mis-tareas"
+          element={
+            <PrivateRoute>
+              <MyTasks />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/crear"
+          element={
+            <PrivateRoute>
+              <CreateTask />
+            </PrivateRoute>
+          }
+        />
+        <Route path="/edit/:id" element={<CreateTask />} />
+        <Route
+          path="/perfil"
           element={
             <PrivateRoute>
               <Profile />
             </PrivateRoute>
-          } />
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

@@ -1,57 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import FeedPost from "../components/FeedPost";
 import MotivationalQuote from "../components/MotivationalQuote";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 
-export default function Feed() {
-  // Posts iniciales (mock)
-  const initialPosts = [
-    {
-      id: 1,
-      author: "Elisabeth May",
-      avatar: "https://i.pravatar.cc/150?img=47",
-      time: "Hace 3 horas",
-      title: "Reprogramación de clase",
-      tags: ["Clases", "Avisos"],
-      content:
-        "Hola a todos, debido a la ausencia de la Dra. Hellen, tendremos que reprogramar la próxima clase. Aviso más información pronto.",
-      image: null,
-    },
-    {
-      id: 2,
-      author: "Dr. Ronald Jackson",
-      avatar: "https://i.pravatar.cc/150?img=56",
-      time: "Hace 1 día",
-      title: "Fecha del examen final",
-      tags: ["Examen", "Académico"],
-      content:
-        "El examen final será reprogramado debido a la suspensión de actividades la próxima semana. En breve compartiré la nueva fecha.",
-      image: null,
-    },
-  ];
+// Hooks del branch maxdev
+import { useTasks } from "../hooks/useTasks";
+import { auth } from "../firebase/config";
 
-  // Estados del formulario
-  const [feedPosts, setFeedPosts] = useState(initialPosts);
+export default function Feed() {
+  // Publicaciones reales de Firestore (maxdev)
+  const { getPublicTasks, toggleLike } = useTasks();
+  const [publicTasks, setPublicTasks] = useState([]);
+
+  // Tus publicaciones locales (mock + imagen)
+  const [feedPosts, setFeedPosts] = useState([]);
+
+  // Formulario
   const [text, setText] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Manejo de selección de imagen
+  // Cargar tareas públicas reales
+  useEffect(() => {
+    const load = async () => {
+      const tasks = await getPublicTasks();
+
+      tasks.sort(
+        (a, b) => b.createdAt?.toMillis?.() - a.createdAt?.toMillis?.()
+      );
+
+      setPublicTasks(tasks);
+    };
+    load();
+  }, []);
+
+  // Likes reales
+  const handleLike = async (taskId, hasLiked) => {
+    await toggleLike(taskId, hasLiked);
+
+    setPublicTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              likes: hasLiked
+                ? t.likes.filter((uid) => uid !== auth.currentUser.uid)
+                : [...(t.likes || []), auth.currentUser.uid],
+            }
+          : t
+      )
+    );
+  };
+
+  // Manejo de imagen local
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImageFile(file);
 
     if (file) {
-      const url = URL.createObjectURL(file);
-      setPreview(url);
+      setPreview(URL.createObjectURL(file));
     } else {
       setPreview(null);
     }
   };
 
-  // Publicar post
+  // Crear publicación local temporal
   const handlePublish = async () => {
     if (!text.trim()) {
       alert("Escribe algo primero.");
@@ -71,18 +86,18 @@ export default function Feed() {
 
     const newPost = {
       id: Date.now(),
-      author: "Usuario Actual",
-      avatar: "https://i.pravatar.cc/150?u=me",
-      time: "Justo ahora",
+      createdByName: auth.currentUser.displayName || "Usuario Actual",
+      createdByPhoto: auth.currentUser.photoURL,
+      createdAt: new Date(),
       title: "Nueva publicación",
-      tags: ["General"],
+      description: text,
       content: text,
       image: imageUrl,
+      likes: [],
     };
 
     setFeedPosts([newPost, ...feedPosts]);
 
-    // Limpiar formulario
     setText("");
     setImageFile(null);
     setPreview(null);
@@ -103,7 +118,7 @@ export default function Feed() {
         <h2 className="text-lg font-semibold mb-3">Crear publicación</h2>
 
         <textarea
-          placeholder="Comparte un aviso o mensaje para todos..."
+          placeholder="Comparte un aviso o mensaje..."
           className="w-full p-4 border rounded-xl shadow-sm resize-none focus:ring focus:ring-purple-300"
           rows={3}
           value={text}
@@ -120,7 +135,6 @@ export default function Feed() {
           />
         </label>
 
-
         {/* Vista previa */}
         {preview && (
           <div className="mt-3">
@@ -136,17 +150,22 @@ export default function Feed() {
           <button
             onClick={handlePublish}
             disabled={loading}
-            className="bg-purple-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-purple-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-purple-700 transition disabled:opacity-50"
           >
             {loading ? "Publicando..." : "Publicar"}
           </button>
         </div>
       </div>
 
-      {/* Publicaciones */}
+      {/* Publicaciones locales (tuyas) */}
       <div className="flex flex-col gap-6">
         {feedPosts.map((p) => (
           <FeedPost key={p.id} post={p} />
+        ))}
+
+        {/* Publicaciones reales del backend */}
+        {publicTasks.map((p) => (
+          <FeedPost key={p.id} post={p} onLike={handleLike} />
         ))}
       </div>
     </DashboardLayout>
