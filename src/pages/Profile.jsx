@@ -2,6 +2,8 @@ import Sidebar from "../components/Sidebar";
 import useUsuario from "../hooks/useUsuario";
 import { useNavigate } from "react-router-dom";
 import { onSignOut, getInfoUsuarioActual, updateInfoUsuarioActual } from "../firebase/user";
+import { uploadToCloudinary } from "../utils/uploadToCloudinary";
+import { getAuth, updateProfile } from "firebase/auth";
 
 import { useEffect, useState } from "react";
 
@@ -11,6 +13,9 @@ export default function Profile() {
 
     const [perfil, setPerfil] = useState(null);
     const [cargando, setCargando] = useState(true);
+    const [nuevaFoto, setNuevaFoto] = useState(null);
+    const [preview, setPreview] = useState(null);
+    const [subiendo, setSubiendo] = useState(false);
 
     useEffect(() => {
         if (!usuario) return;
@@ -26,20 +31,60 @@ export default function Profile() {
         cargarDatos();
     }, [usuario]);
 
+    const handleChangeFoto = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validación básica
+        if (!file.type.startsWith("image/")) {
+            alert("Debes seleccionar una imagen válida.");
+            return;
+        }
+
+        setNuevaFoto(file);
+        setPreview(URL.createObjectURL(file));
+    };
+
     const guardarCambios = async () => {
         if (!usuario) return;
 
         try {
+            setSubiendo(true);
+
+            let urlFoto = perfil.photoURL || usuario.photoURL;
+
+            // Si hay nueva foto → subir a Cloudinary
+            if (nuevaFoto) {
+                urlFoto = await uploadToCloudinary(nuevaFoto);
+            }
+
+            // Guardar en Firestore
             await updateInfoUsuarioActual({
                 nombre: perfil.nombre,
                 escuela: perfil.escuela,
                 tipoUsuario: perfil.tipoUsuario,
+                photoURL: urlFoto,
             });
 
+            // Guardar también en Firebase Auth (usuario actual)
+            const auth = getAuth();
+            await updateProfile(auth.currentUser, {
+                photoURL: urlFoto,
+            });
+
+            setPerfil((prev) => ({ 
+                ...prev, 
+                photoURL: urlFoto 
+            }));
+
             alert("Los cambios se han realizado con éxito.");
+            setNuevaFoto(null);
+            setPreview(null);            
         } catch (err) {
-            console.error(err);
-            alert("Error al guardar los cambios.");
+            console.error("ERROR AL GUARDAR:", err);
+            alert("Ocurrió un error al guardar los cambios.");
+        } finally {
+            setSubiendo(false);
         }
     };
 
@@ -65,14 +110,20 @@ export default function Profile() {
                         {/* FOTO */}
                         <div className="flex items-center gap-4">
                             <img
-                                src={usuario.photoURL || "https://i.pinimg.com/236x/9b/47/a0/9b47a023caf29f113237d61170f34ad9.jpg"} //Falta agregar el campo a 
+                                src={perfil.photoURL || usuario.photoURL || "https://i.pinimg.com/236x/9b/47/a0/9b47a023caf29f113237d61170f34ad9.jpg"}
                                 alt="Foto de perfil"
                                 className="w-20 h-20 rounded-full object-cover border"
                             />
 
+
                             <label className="cursor-pointer text-blue-600 font-semibold hover:underline">
-                                Cambiar foto
-                                <input type="file" className="hidden" />
+                            Cambiar foto
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleChangeFoto}
+                            />
                             </label>
                         </div>
 

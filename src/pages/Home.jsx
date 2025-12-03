@@ -1,9 +1,9 @@
-import { useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar_1";
 import Hero from "../components/Hero";
 import ServiceCard from "../components/Card";
 import Footer from "../components/Footer";
+import MotivationalQuote from "../components/MotivationalQuote";
 
 export default function Home() {
   return (
@@ -25,8 +25,12 @@ export default function Home() {
         </Link>
       </div>
 
-      <section className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Frase motivacional */}
+      <div className="max-w-3xl mx-auto px-6 my-10">
+        <MotivationalQuote />
+      </div>
 
+      <section className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-8">
         <ServiceCard
           title="¡Organiza tus tareas!"
           text="Resuelve el desorden de tener fechas de entrega anotadas en cuadernos"
@@ -47,8 +51,8 @@ export default function Home() {
           color="bg-purple-600"
           image="https://www.concur.com.mx/sites/mx/files/acn/2025-09/tareas%20administrativas.jpg"
         />
-
       </section>
+
       <Footer />
     </>
   );

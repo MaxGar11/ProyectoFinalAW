@@ -31,6 +31,14 @@ export default function FeedPost({ post }) {
 
       {/* Contenido */}
       <p className="text-gray-700 leading-relaxed">{post.content}</p>
+      {post.image && (
+        <img
+          src={post.image}
+          alt="Imagen adjunta"
+          className="mt-3 rounded-xl shadow"
+        />
+      )}
+
 
       {/* Acciones */}
       <button className="mt-4 text-blue-600 font-semibold hover:underline">
