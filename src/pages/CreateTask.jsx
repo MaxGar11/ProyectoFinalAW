@@ -162,21 +162,57 @@ export default function CreateTask() {
                 Seleccionar archivo
                 <input
                   type="file"
-                  accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                  accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx"
                   className="hidden"
                   onChange={(e) => {
                     const selected = e.target.files[0];
-                    setFile(selected);
 
                     if (!selected) {
+                      setFile(null);
                       setPreview(null);
                       return;
                     }
 
+                    // === VALIDACIÓN DE PESO (máx 10MB) ===
+                    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                    if (selected.size > MAX_SIZE) {
+                      alert("El archivo supera los 10MB permitidos.");
+                      e.target.value = ""; // limpiar input
+                      setFile(null);
+                      setPreview(null);
+                      return;
+                    }
+
+                    // === VALIDACIÓN DE TIPO ===
+                    const allowedTypes = [
+                      "image/jpeg",
+                      "image/png",
+                      "image/webp",
+                      "application/pdf",
+                      "application/msword",
+                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                      "application/vnd.ms-excel",
+                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                      "application/vnd.ms-powerpoint",
+                      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                      "text/plain",
+                    ];
+
+                    if (!allowedTypes.includes(selected.type)) {
+                      alert("Tipo de archivo no permitido.");
+                      e.target.value = "";
+                      setFile(null);
+                      setPreview(null);
+                      return;
+                    }
+
+                    // === SI TODO ES CORRECTO ===
+                    setFile(selected);
+
                     if (selected.type.startsWith("image/")) {
                       setPreview(URL.createObjectURL(selected));
                     } else {
-                      setPreview(selected.name); // solo mostramos nombre
+                      setPreview(selected.name); // documentos solo muestran nombre
                     }
                   }}
                 />

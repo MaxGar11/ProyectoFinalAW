@@ -118,7 +118,7 @@ export default function Feed() {
           Seleccionar archivo
           <input
             type="file"
-            accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+            accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
             className="hidden"
             onChange={handleFileChange}
           />
