@@ -53,23 +53,36 @@ export const useTasks = () => {
   // ========================
   // Crear tarea
   // ========================
-  const createTask = async ({ title, description, isPublic }) => {
-    if (!currentUser) return;
+  const createTask = async ({ 
+  title, 
+  description, 
+  deadline,
+  status,
+  isPublic,
+  attachment,   // ← URL del archivo
+  attachmentType // ← mime type
+}) => {
 
-    await addDoc(tasksRef, {
-      title,
-      description,
-      isPublic,
-      completed: false,
-      createdAt: new Date(),
-      userId: currentUser.uid,
-      createdByName: currentUser.displayName || "Usuario",
-      createdByPhoto: currentUser.photoURL || null,
-      likes: [],
-    });
+  if (!currentUser) return;
 
-    getUserTasks();
-  };
+  await addDoc(tasksRef, {
+    title,
+    description,
+    deadline: deadline || null,
+    status: status || "pending",
+    isPublic,
+    attachment: attachment || null,
+    attachmentType: attachmentType || null,
+    completed: false,
+    createdAt: new Date(),
+    userId: currentUser.uid,
+    createdByName: currentUser.displayName || "Usuario",
+    createdByPhoto: currentUser.photoURL || null,
+    likes: [],
+  });
+
+  getUserTasks();
+};
 
   // ========================
   // Obtener tarea por ID
@@ -84,10 +97,20 @@ export const useTasks = () => {
   // Editar tarea
   // ========================
   const updateTask = async (id, data) => {
-    const ref = doc(db, "tasks", id);
-    await updateDoc(ref, data);
-    getUserTasks();
-  };
+  const ref = doc(db, "tasks", id);
+
+  await updateDoc(ref, {
+    title: data.title,
+    description: data.description,
+    deadline: data.deadline || null,
+    status: data.status || "pending",
+    isPublic: data.isPublic,
+    attachment: data.attachment ?? null,
+    attachmentType: data.attachmentType ?? null,
+  });
+
+  getUserTasks();
+};
 
   // ========================
   // Marcar como completada

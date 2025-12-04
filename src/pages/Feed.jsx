@@ -4,42 +4,31 @@ import FeedPost from "../components/FeedPost";
 import MotivationalQuote from "../components/MotivationalQuote";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 
-// Hooks del branch maxdev
 import { useTasks } from "../hooks/useTasks";
 import { auth } from "../firebase/config";
 
 export default function Feed() {
-  // Publicaciones reales de Firestore (maxdev)
   const { getPublicTasks, toggleLike } = useTasks();
   const [publicTasks, setPublicTasks] = useState([]);
 
-  // Tus publicaciones locales (mock + imagen)
   const [feedPosts, setFeedPosts] = useState([]);
 
-  // Formulario
   const [text, setText] = useState("");
-  const [imageFile, setImageFile] = useState(null);
+  const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Cargar tareas públicas reales
   useEffect(() => {
     const load = async () => {
       const tasks = await getPublicTasks();
-
-      tasks.sort(
-        (a, b) => b.createdAt?.toMillis?.() - a.createdAt?.toMillis?.()
-      );
-
+      tasks.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
       setPublicTasks(tasks);
     };
     load();
   }, []);
 
-  // Likes reales
   const handleLike = async (taskId, hasLiked) => {
     await toggleLike(taskId, hasLiked);
-
     setPublicTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
@@ -54,19 +43,22 @@ export default function Feed() {
     );
   };
 
-  // Manejo de imagen local
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file);
+  const handleFileChange = (e) => {
+    const selected = e.target.files[0];
+    setFile(selected);
 
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-    } else {
+    if (!selected) {
       setPreview(null);
+      return;
+    }
+
+    if (selected.type.startsWith("image/")) {
+      setPreview(URL.createObjectURL(selected));
+    } else {
+      setPreview(selected.name);
     }
   };
 
-  // Crear publicación local temporal
   const handlePublish = async () => {
     if (!text.trim()) {
       alert("Escribe algo primero.");
@@ -74,14 +66,15 @@ export default function Feed() {
     }
 
     setLoading(true);
-    let imageUrl = null;
+
+    let attachmentUrl = null;
 
     try {
-      if (imageFile) {
-        imageUrl = await uploadToCloudinary(imageFile);
+      if (file) {
+        attachmentUrl = await uploadToCloudinary(file);
       }
     } catch (error) {
-      console.error("Error subiendo imagen:", error);
+      console.error("Error subiendo archivo:", error);
     }
 
     const newPost = {
@@ -89,17 +82,15 @@ export default function Feed() {
       createdByName: auth.currentUser.displayName || "Usuario Actual",
       createdByPhoto: auth.currentUser.photoURL,
       createdAt: new Date(),
-      title: "Nueva publicación",
       description: text,
-      content: text,
-      image: imageUrl,
+      attachment: attachmentUrl,
       likes: [],
     };
 
     setFeedPosts([newPost, ...feedPosts]);
 
     setText("");
-    setImageFile(null);
+    setFile(null);
     setPreview(null);
     setLoading(false);
   };
@@ -108,12 +99,10 @@ export default function Feed() {
     <DashboardLayout showRight={true}>
       <h1 className="text-3xl font-bold mb-6">Feed público</h1>
 
-      {/* Frase motivacional */}
       <div className="mb-6">
         <MotivationalQuote />
       </div>
 
-      {/* Crear publicación */}
       <div className="bg-white rounded-xl p-6 shadow mb-8">
         <h2 className="text-lg font-semibold mb-3">Crear publicación</h2>
 
@@ -126,23 +115,28 @@ export default function Feed() {
         ></textarea>
 
         <label className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold cursor-pointer hover:bg-blue-700 transition">
-          Seleccionar imagen
+          Seleccionar archivo
           <input
             type="file"
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
             className="hidden"
-            onChange={handleImageChange}
+            onChange={handleFileChange}
           />
         </label>
 
-        {/* Vista previa */}
         {preview && (
           <div className="mt-3">
-            <img
-              src={preview}
-              className="w-48 rounded-xl shadow border"
-              alt="preview"
-            />
+            {file?.type?.startsWith("image/") ? (
+              <img
+                src={preview}
+                className="w-48 rounded-xl shadow border"
+                alt="preview"
+              />
+            ) : (
+              <p className="text-gray-700 mt-2">
+                Archivo seleccionado: {preview}
+              </p>
+            )}
           </div>
         )}
 
@@ -157,13 +151,11 @@ export default function Feed() {
         </div>
       </div>
 
-      {/* Publicaciones locales (tuyas) */}
       <div className="flex flex-col gap-6">
         {feedPosts.map((p) => (
           <FeedPost key={p.id} post={p} />
         ))}
 
-        {/* Publicaciones reales del backend */}
         {publicTasks.map((p) => (
           <FeedPost key={p.id} post={p} onLike={handleLike} />
         ))}

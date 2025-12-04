@@ -12,17 +12,26 @@ export default function FeedPost({ post, onLike }) {
   const toggle = () => {
     setIsLiked(!isLiked);
     setLikeCount((prev) => prev + (isLiked ? -1 : 1));
-    onLike(post.id, isLiked);
+    if (onLike) onLike(post.id, isLiked);
   };
 
   const formattedDate = post.createdAt?.toDate
     ? post.createdAt.toDate().toLocaleString()
-    : "";
+    : post.createdAt?.toLocaleString?.() || "";
 
   // Compatibilidad con ambos branches
   const title = post.title || null;
   const description = post.description || post.content || null;
-  const image = post.image || null;
+
+  // Soporte para nuevas tareas y para tu feed local
+  const attachment = post.attachment || post.image || null;
+
+  // Detectar tipo de archivo
+  const isImage = attachment
+    ? attachment.match(/\.(jpg|jpeg|png|webp)$/i)
+    : false;
+
+  const isDocument = attachment && !isImage;
 
   return (
     <div className="bg-white p-6 rounded-xl shadow border">
@@ -46,41 +55,64 @@ export default function FeedPost({ post, onLike }) {
         </div>
       </div>
 
-      {/* Título (solo si existe) */}
+      {/* Título */}
       {title && (
         <h2 className="text-xl font-bold mb-2">
           {title}
         </h2>
       )}
 
-      {/* Contenido / descripción */}
+      {/* Descripción */}
       {description && (
         <p className="text-gray-700 leading-relaxed mb-3">
           {description}
         </p>
       )}
 
-      {/* Imagen (solo si existe) */}
-      {image && (
+      {/* Si es imagen */}
+      {isImage && (
         <img
-          src={image}
+          src={attachment}
           alt="Imagen adjunta"
-          className="mt-2 rounded-xl shadow"
+          className="mt-2 rounded-xl shadow max-h-[300px] object-cover"
         />
       )}
 
+      {/* Si es documento */}
+      {isDocument && (
+        <div className="mt-3 p-4 border rounded-xl bg-gray-100 flex items-center justify-between">
+          <div>
+            <p className="font-semibold mb-1">Archivo adjunto</p>
+            <p className="text-sm text-gray-600 truncate max-w-[250px]">
+              {attachment.split("/").pop()}
+            </p>
+          </div>
+
+          <a
+            href={attachment}
+            download
+            target="_blank"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+          >
+            Descargar
+          </a>
+        </div>
+      )}
+
       {/* Likes */}
-      <button
-        onClick={toggle}
-        className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition mt-3"
-      >
-        <Heart
-          size={22}
-          fill={isLiked ? "red" : "none"}
-          stroke={isLiked ? "red" : "gray"}
-        />
-        {likeCount} likes
-      </button>
+      {onLike && (
+        <button
+          onClick={toggle}
+          className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition mt-4"
+        >
+          <Heart
+            size={22}
+            fill={isLiked ? "red" : "none"}
+            stroke={isLiked ? "red" : "gray"}
+          />
+          {likeCount} likes
+        </button>
+      )}
     </div>
   );
 }
