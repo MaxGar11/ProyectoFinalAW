@@ -10,7 +10,7 @@ export default function Home() {
     <>
       <Navbar />
       <Hero />
-
+      {/*}
       <div className="flex flex-col items-center gap-4 my-12">
         <Link to="/feed" className="px-6 py-3 bg-blue-500 text-white rounded-lg">
           Ver Feed
@@ -24,7 +24,7 @@ export default function Home() {
           Crear Tarea
         </Link>
       </div>
-
+        */}
       {/* Frase motivacional */}
       <div className="max-w-3xl mx-auto px-6 my-10">
         <MotivationalQuote />
