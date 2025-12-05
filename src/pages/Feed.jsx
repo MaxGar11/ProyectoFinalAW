@@ -6,6 +6,8 @@ import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 
 import { useTasks } from "../hooks/useTasks";
 import { auth } from "../firebase/config";
+import useUsuario from "../hooks/useUsuario";
+
 
 export default function Feed() {
   const { getPublicTasks, toggleLike } = useTasks();

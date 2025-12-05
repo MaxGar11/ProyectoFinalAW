@@ -26,12 +26,20 @@ export const useTasks = () => {
   // Detectar usuario real
   // ========================
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setCurrentUser(u);
-    });
+  const unsub = onAuthStateChanged(auth, async (u) => {
+    setCurrentUser(u);
 
-    return () => unsub();
-  }, []);
+    if (u) {
+      await syncUserDataInTasks(
+        u.uid,
+        u.displayName || "Usuario",
+        u.photoURL || null
+      );
+    }
+  });
+
+  return () => unsub();
+}, []);
 
   // ========================
   // Obtener tareas del usuario actual
@@ -134,19 +142,29 @@ export const useTasks = () => {
   // Feed público global
   // ========================
   const getPublicTasks = async () => {
-    const q = query(
-      collection(db, "tasks"),
-      where("isPublic", "==", true),
-      orderBy("createdAt", "desc")
-    );
+  const q = query(
+    collection(db, "tasks"),
+    where("isPublic", "==", true),
+    orderBy("createdAt", "desc")
+  );
 
-    const snapshot = await getDocs(q);
+  const snapshot = await getDocs(q);
 
-    return snapshot.docs.map((docu) => ({
+  const DEFAULT_PHOTO =
+    "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+  return snapshot.docs.map((docu) => {
+    const d = docu.data();
+
+    return {
       id: docu.id,
-      ...docu.data(),
-    }));
-  };
+      ...d,
+      createdByName: d.createdByName || "Usuario",
+      createdByPhoto: d.createdByPhoto || DEFAULT_PHOTO,
+    };
+  });
+};
+
 
   // ========================
   // Tareas públicas por usuario
@@ -174,6 +192,18 @@ export const useTasks = () => {
       likes: hasLiked ? arrayRemove(userId) : arrayUnion(userId),
     });
   };
+
+  const syncUserDataInTasks = async (uid, name, photo) => {
+  const q = query(tasksRef, where("userId", "==", uid));
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach(async (docu) => {
+    await updateDoc(doc(db, "tasks", docu.id), {
+      createdByName: name,
+      createdByPhoto: photo,
+    });
+  });
+};
 
   // ========================
   // Cargar tareas al inicio

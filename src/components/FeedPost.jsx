@@ -9,6 +9,9 @@ export default function FeedPost({ post, onLike }) {
   const [isLiked, setIsLiked] = useState(hasLiked);
   const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
 
+  const DEFAULT_PHOTO =
+    "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
   const toggle = () => {
     setIsLiked(!isLiked);
     setLikeCount((prev) => prev + (isLiked ? -1 : 1));
@@ -19,30 +22,22 @@ export default function FeedPost({ post, onLike }) {
     ? post.createdAt.toDate().toLocaleString()
     : post.createdAt?.toLocaleString?.() || "";
 
-  // Compatibilidad con ambos branches
   const title = post.title || null;
   const description = post.description || post.content || null;
 
-  // Soporte para nuevas tareas y para tu feed local
   const attachment = post.attachment || post.image || null;
 
-  // Detectar tipo de archivo
-  const isImage = attachment
-    ? attachment.match(/\.(jpg|jpeg|png|webp)$/i)
-    : false;
+  const isImage =
+    attachment?.match(/\.(jpg|jpeg|png|webp)$/i) ?? false;
 
   const isDocument = attachment && !isImage;
 
   return (
     <div className="bg-white p-6 rounded-xl shadow border">
-      
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
         <img
-          src={
-            post.createdByPhoto ||
-            "https://i.pravatar.cc/100?u=" + post.createdBy
-          }
+          src={post.createdByPhoto || DEFAULT_PHOTO}
           alt="avatar"
           className="w-12 h-12 rounded-full object-cover shadow"
         />
@@ -56,20 +51,14 @@ export default function FeedPost({ post, onLike }) {
       </div>
 
       {/* Título */}
-      {title && (
-        <h2 className="text-xl font-bold mb-2">
-          {title}
-        </h2>
-      )}
+      {title && <h2 className="text-xl font-bold mb-2">{title}</h2>}
 
       {/* Descripción */}
       {description && (
-        <p className="text-gray-700 leading-relaxed mb-3">
-          {description}
-        </p>
+        <p className="text-gray-700 leading-relaxed mb-3">{description}</p>
       )}
 
-      {/* Si es imagen */}
+      {/* Imagen */}
       {isImage && (
         <img
           src={attachment}
@@ -78,11 +67,11 @@ export default function FeedPost({ post, onLike }) {
         />
       )}
 
-      {/* Si es documento */}
+      {/* Documento */}
       {isDocument && (
         <div className="mt-3 p-4 border rounded-xl bg-gray-100 flex items-center justify-between">
           <div>
-            <p className="font-semibold mb-1">Archivo adjunto</p>
+            <p className="font-semibold mb-1">Documento adjunto</p>
             <p className="text-sm text-gray-600 truncate max-w-[250px]">
               {attachment.split("/").pop()}
             </p>
