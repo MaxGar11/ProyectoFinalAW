@@ -2,7 +2,7 @@ import { axiosClient } from "./axiosClient";
 
 export const getMotivationPhrase = async () => {
   try {
-    const res = await axiosClient.get("/random");
+    const res = await axiosClient.get();
     return {
       phrase: res.data.content,
       author: res.data.author,
