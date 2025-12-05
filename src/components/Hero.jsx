@@ -12,7 +12,7 @@ export default function Hero() {
             Esta es tu plataforma para gestionar tareas de manera eficiente y sencilla.
           </p>
 
-          <button className="mt-6 bg-red-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-red-600">
+          <button className="mt-6 bg-red-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-red-600" onClick={() => navigate("/login")}>
             Empezar
           </button>
         </div>
